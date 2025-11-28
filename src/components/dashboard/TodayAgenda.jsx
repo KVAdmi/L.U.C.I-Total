@@ -94,31 +94,4 @@ const TodayAgenda = () => {
 };
 
 export default TodayAgenda;
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
-            >
-                {appointments.map((apt, index) => (
-                    <motion.li
-                        key={index}
-                        variants={itemVariants}
-                        className="flex items-center gap-4 p-3 bg-background/30 rounded-lg border border-white/10"
-                    >
-                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/10">
-                            {getTypeIcon(apt.type)}
-                        </div>
-                        <div className="flex-1">
-                            <p className="font-semibold text-foreground">{apt.title}</p>
-                            <div className="flex items-center text-xs text-muted-foreground">
-                                <Clock className="h-3 w-3 mr-1.5" />
-                                {apt.time} - {t('common.today')}
-                            </div>
-                        </div>
-                    </motion.li>
-                ))}
-            </motion.ul>
-        </div>
-    );
-};
 
-export default TodayAgenda;
