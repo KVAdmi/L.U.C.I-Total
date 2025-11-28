@@ -1,9 +1,9 @@
 import React from 'react';
-import { Cloud, Sun, MapPin, RefreshCw, CloudRain, CloudDrizzle, CloudSnow, Wind } from 'lucide-react';
+import { Cloud, Sun, MapPin, RefreshCw, CloudRain, CloudDrizzle, CloudSnow, Wind, Navigation } from 'lucide-react';
 import { useWeather } from '@/hooks/useWeather';
 
 const HeroBar = () => {
-  const { weather, forecast, loading, error, location, refreshWeather } = useWeather();
+  const { weather, forecast, loading, error, location, refreshWeather, requestLocation } = useWeather();
 
   const greeting = () => {
     const hour = new Date().getHours();
@@ -54,6 +54,17 @@ const HeroBar = () => {
                 title="Actualizar clima"
               >
                 <RefreshCw className="w-3 h-3" />
+              </button>
+            )}
+            
+            {/* Botón para solicitar ubicación */}
+            {!location && !loading && (
+              <button
+                onClick={requestLocation}
+                className="p-2 rounded-lg bg-[#00BFA5]/20 hover:bg-[#00BFA5]/30 text-[#00BFA5] transition-colors"
+                title="Detectar mi ubicación"
+              >
+                <Navigation className="w-3 h-3" />
               </button>
             )}
           </div>

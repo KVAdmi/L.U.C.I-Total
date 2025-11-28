@@ -128,7 +128,9 @@ export function useWeather() {
       return;
     }
 
-    getCurrentLocation();
+    // NO pedimos ubicación automáticamente - esperamos que el usuario lo solicite
+    // Usamos ciudad por defecto primero
+    fetchWeatherByCity(DEFAULT_CITY);
   }, []);
 
   const refreshWeather = () => {
@@ -139,6 +141,10 @@ export function useWeather() {
     }
   };
 
+  const requestLocation = () => {
+    getCurrentLocation();
+  };
+
   return {
     weather,
     forecast,
@@ -146,6 +152,7 @@ export function useWeather() {
     error,
     location,
     refreshWeather,
+    requestLocation,
     fetchWeatherByCity,
   };
 }
