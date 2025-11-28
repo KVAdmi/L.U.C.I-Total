@@ -183,23 +183,23 @@ CREATE TABLE IF NOT EXISTS public.conversation_history (
 -- ========================================
 -- INDICES
 -- ========================================
-CREATE INDEX idx_appointments_workspace ON public.appointments(workspace_id);
-CREATE INDEX idx_appointments_start_time ON public.appointments(start_time);
-CREATE INDEX idx_appointments_status ON public.appointments(status);
+CREATE INDEX IF NOT EXISTS idx_appointments_workspace ON public.appointments(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_appointments_start_time ON public.appointments(start_time);
+CREATE INDEX IF NOT EXISTS idx_appointments_status ON public.appointments(status);
 
-CREATE INDEX idx_reminders_workspace ON public.reminders(workspace_id);
-CREATE INDEX idx_reminders_due_date ON public.reminders(due_date);
-CREATE INDEX idx_reminders_status ON public.reminders(status);
-CREATE INDEX idx_reminders_priority ON public.reminders(priority);
+CREATE INDEX IF NOT EXISTS idx_reminders_workspace ON public.reminders(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_reminders_due_date ON public.reminders(due_date);
+CREATE INDEX IF NOT EXISTS idx_reminders_status ON public.reminders(status);
+CREATE INDEX IF NOT EXISTS idx_reminders_priority ON public.reminders(priority);
 
-CREATE INDEX idx_tasks_workspace ON public.tasks(workspace_id);
-CREATE INDEX idx_tasks_status ON public.tasks(status);
-CREATE INDEX idx_tasks_priority ON public.tasks(priority);
-CREATE INDEX idx_tasks_due_date ON public.tasks(due_date);
+CREATE INDEX IF NOT EXISTS idx_tasks_workspace ON public.tasks(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_status ON public.tasks(status);
+CREATE INDEX IF NOT EXISTS idx_tasks_priority ON public.tasks(priority);
+CREATE INDEX IF NOT EXISTS idx_tasks_due_date ON public.tasks(due_date);
 
-CREATE INDEX idx_communications_workspace ON public.communications(workspace_id);
-CREATE INDEX idx_time_entries_workspace ON public.time_entries(workspace_id);
-CREATE INDEX idx_conversation_history_workspace ON public.conversation_history(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_communications_workspace ON public.communications(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_time_entries_workspace ON public.time_entries(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_conversation_history_workspace ON public.conversation_history(workspace_id);
 
 -- ========================================
 -- TRIGGERS
@@ -241,6 +241,17 @@ ALTER TABLE public.integrations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.team_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.conversation_history ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Enable all" ON public.workspaces;
+DROP POLICY IF EXISTS "Enable all" ON public.profiles;
+DROP POLICY IF EXISTS "Enable all" ON public.appointments;
+DROP POLICY IF EXISTS "Enable all" ON public.reminders;
+DROP POLICY IF EXISTS "Enable all" ON public.tasks;
+DROP POLICY IF EXISTS "Enable all" ON public.communications;
+DROP POLICY IF EXISTS "Enable all" ON public.time_entries;
+DROP POLICY IF EXISTS "Enable all" ON public.integrations;
+DROP POLICY IF EXISTS "Enable all" ON public.team_members;
+DROP POLICY IF EXISTS "Enable all" ON public.conversation_history;
+
 CREATE POLICY "Enable all" ON public.workspaces FOR ALL USING (true);
 CREATE POLICY "Enable all" ON public.profiles FOR ALL USING (true);
 CREATE POLICY "Enable all" ON public.appointments FOR ALL USING (true);
@@ -261,7 +272,8 @@ VALUES (
     'L.U.C.I Workspace',
     'patricia@luci.com',
     'pro'
-);
+)
+ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO public.profiles (workspace_id, name, email, role, company)
 VALUES (
@@ -270,6 +282,7 @@ VALUES (
     'patricia@luci.com',
     'Director General',
     'Firma Más Importante de México'
-);
+)
+ON CONFLICT DO NOTHING;
 
 -- ✅ LISTO
