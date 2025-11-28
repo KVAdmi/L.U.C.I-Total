@@ -10,12 +10,11 @@ import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 
 const AppRoutes = () => {
-  const { user } = useAuth();
-
+  // DESARROLLO: Sin login para mostrar a socios
   return (
     <Routes>
-      <Route path="/login" element={user ? <Navigate to="/" /> : <LoginPage />} />
-      <Route path="/*" element={user ? <CrmLayout /> : <Navigate to="/login" />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/*" element={<CrmLayout />} />
     </Routes>
   );
 };
