@@ -1,43 +1,46 @@
 
 import React from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { Helmet } from 'react-helmet';
 import { motion } from 'framer-motion';
-import SpecialtyModules from '@/components/dashboard/SpecialtyModules';
-import SystemHealth from '@/components/dashboard/SystemHealth';
-import RecentActivity from '@/components/dashboard/RecentActivity';
-import QuickStats from '@/components/dashboard/QuickStats';
+import HeroBar from '@/components/dashboard/HeroBar';
 import TodayAgenda from '@/components/dashboard/TodayAgenda';
+import TodayTasks from '@/components/dashboard/TodayTasks';
+import CriticalReminders from '@/components/dashboard/CriticalReminders';
+import ExecutiveSummary from '@/components/dashboard/ExecutiveSummary';
+import NewsStream from '@/components/dashboard/NewsStream';
+import LuciRecommendations from '@/components/dashboard/LuciRecommendations';
 
 const Dashboard = ({ onNavigate }) => {
-  const { t } = useLanguage();
-
   return (
     <>
       <Helmet>
-        <title>{t('sidebar.dashboard')} | AL-E</title>
-        <meta name="description" content={t('dashboard.welcome')} />
+        <title>Dashboard Ejecutivo | L.U.C.I</title>
+        <meta name="description" content="Panel ejecutivo inteligente con información crítica del día" />
       </Helmet>
       <motion.div 
-        className="p-4 sm:p-6 lg:p-8 space-y-8"
+        className="p-4 sm:p-6 lg:p-8 space-y-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div>
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">{t('dashboard.panelPrincipal')}</h1>
-          <p className="text-muted-foreground mt-1">{t('dashboard.welcome')}</p>
+        {/* Hero Bar - Clima y Bienvenida */}
+        <HeroBar />
+        
+        {/* Tu Día Hoy - 3 Tarjetas Principales */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <TodayAgenda />
+          <TodayTasks />
+          <CriticalReminders />
         </div>
-        
-        <QuickStats />
-        
-        <SpecialtyModules onNavigate={onNavigate} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-          <TodayAgenda onNavigate={onNavigate} />
-          <SystemHealth />
-          <RecentActivity />
-        </div>
+        {/* Informe Ejecutivo - 4 Mini Cards */}
+        <ExecutiveSummary />
+
+        {/* News & Insights */}
+        <NewsStream />
+
+        {/* L.U.C.I Recommendations */}
+        <LuciRecommendations />
       </motion.div>
     </>
   );

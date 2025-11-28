@@ -1,53 +1,99 @@
 
 import React from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { motion } from 'framer-motion';
-import { Calendar, Clock, Video, Users, Phone, ArrowRight } from 'lucide-react';
+import { Clock, MapPin, Users, Route, FileText } from 'lucide-react';
 
-const appointments = [
-    { time: '09:00', title: 'Reunión con Cliente VIP', type: 'meeting' },
-    { time: '11:00', title: 'Llamada de seguimiento', type: 'call' },
-    { time: '14:00', title: 'Workshop de estrategia', type: 'workshop' },
-];
+const TodayAgenda = () => {
+  const nextMeeting = {
+    time: '11:30',
+    title: 'Junta con Mauricio',
+    location: 'Oficina Reforma',
+    departureTime: '10:52',
+    travelTime: '22 min',
+    attendees: ['Mauricio', 'Ana', '+2'],
+  };
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
-};
+  return (
+    <div className="bg-white/[.07] backdrop-blur-xl rounded-2xl p-6 border border-white/10 hover:border-[#00BFA5]/30 transition-all duration-300">
+      <div className="flex items-center gap-2 mb-4">
+        <Clock className="w-5 h-5 text-[#00BFA5]" />
+        <h3 className="text-lg font-bold text-white">Agenda del día</h3>
+      </div>
 
-const itemVariants = {
-  hidden: { x: -20, opacity: 0 },
-  visible: { x: 0, opacity: 1 }
-};
-
-const TodayAgenda = ({ onNavigate }) => {
-    const { t } = useLanguage();
-
-    const getTypeIcon = (type) => {
-        switch (type) {
-            case 'video': return <Video className="h-4 w-4 text-cyan-400" />;
-            case 'call': return <Phone className="h-4 w-4 text-green-400" />;
-            case 'workshop': return <Users className="h-4 w-4 text-purple-400" />;
-            default: return <Users className="h-4 w-4 text-blue-400" />;
-        }
-    };
-
-    return (
-        <div className="bg-glass-bg border border-glass-border rounded-2xl p-6 shadow-lg h-full flex flex-col xl:col-span-1">
-            <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold flex items-center text-foreground">
-                    <Calendar className="h-5 w-5 mr-3" />
-                    {t('dashboard.todayAgenda')}
-                </h2>
-                <button 
-                    onClick={() => onNavigate('agenda')} 
-                    className="flex items-center gap-1 text-sm text-primary hover:underline"
-                >
-                    {t('common.viewAll')} <ArrowRight className="h-3 w-3" />
-                </button>
+      <div className="space-y-4">
+        {/* Next Meeting */}
+        <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+          <div className="flex items-start justify-between mb-3">
+            <div>
+              <div className="text-2xl font-bold text-white mb-1">{nextMeeting.time}</div>
+              <div className="text-base font-semibold text-white/90">{nextMeeting.title}</div>
             </div>
-            <motion.ul 
-                className="space-y-4 flex-1"
+            <div className="px-3 py-1 bg-[#00BFA5]/20 border border-[#00BFA5]/30 rounded-full">
+              <span className="text-xs font-bold text-[#00BFA5]">PRÓXIMO</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 mb-3">
+            <MapPin className="w-4 h-4 text-white/60" />
+            <span className="text-sm text-white/70">{nextMeeting.location}</span>
+          </div>
+
+          <div className="bg-[#003336]/50 rounded-lg p-3 mb-3 border border-white/5">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-xs text-white/50">Salida sugerida</span>
+                <div className="text-lg font-bold text-white">{nextMeeting.departureTime}</div>
+              </div>
+              <div className="text-right">
+                <span className="text-xs text-white/50">Traslado</span>
+                <div className="text-base font-semibold text-[#00BFA5]">{nextMeeting.travelTime}</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 mb-4">
+            <Users className="w-4 h-4 text-white/60" />
+            <div className="flex items-center gap-2">
+              {nextMeeting.attendees.map((attendee, idx) => (
+                <span key={idx} className="text-sm text-white/70">{attendee}</span>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <button className="px-4 py-2 bg-[#00BFA5] hover:bg-[#00BFA5]/90 rounded-lg text-sm font-semibold text-[#001E21] transition-colors flex items-center justify-center gap-2">
+              <Route className="w-4 h-4" />
+              Ver ruta
+            </button>
+            <button className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-semibold text-white transition-colors flex items-center justify-center gap-2 border border-white/10">
+              <FileText className="w-4 h-4" />
+              Notas
+            </button>
+          </div>
+        </div>
+
+        {/* Additional meetings */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/5 hover:border-white/10 transition-colors">
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-bold text-white/90">15:00</span>
+              <span className="text-sm text-white/70">Revisión financiera Q4</span>
+            </div>
+            <span className="text-xs text-white/50">Teams</span>
+          </div>
+          <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/5 hover:border-white/10 transition-colors">
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-bold text-white/90">17:30</span>
+              <span className="text-sm text-white/70">Llamada con proveedor</span>
+            </div>
+            <span className="text-xs text-white/50">Telefónica</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TodayAgenda;
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
