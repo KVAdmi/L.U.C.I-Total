@@ -98,16 +98,19 @@ const TodayAgenda = ({ appointments = [], loading = false, onRefresh }) => {
                   <div className="text-base font-semibold text-[#00BFA5]">{nextMeeting.travel_time} min</div>
                 </div>
               </div>
-          </div>
-
-          <div className="flex items-center gap-2 mb-4">
-            <Users className="w-4 h-4 text-slate-600 dark:text-white/60" />
-            <div className="flex items-center gap-2">
-              {nextMeeting.attendees.map((attendee, idx) => (
-                <span key={idx} className="text-sm text-slate-700 dark:text-white/70">{attendee}</span>
-              ))}
             </div>
-          </div>
+          )}
+
+          {nextMeeting.attendees && nextMeeting.attendees.length > 0 && (
+            <div className="flex items-center gap-2 mb-4">
+              <Users className="w-4 h-4 text-slate-600 dark:text-white/60" />
+              <div className="flex items-center gap-2">
+                {nextMeeting.attendees.map((attendee, idx) => (
+                  <span key={idx} className="text-sm text-slate-700 dark:text-white/70">{attendee}</span>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-2">
             <button className="px-4 py-2 bg-[#00BFA5] hover:bg-[#00BFA5]/90 rounded-lg text-sm font-semibold text-white transition-colors flex items-center justify-center gap-2">

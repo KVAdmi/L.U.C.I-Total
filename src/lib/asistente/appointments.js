@@ -70,14 +70,25 @@ export async function getAppointments(filters = {}) {
   }
 
   // Fallback: Mock data si no hay Supabase
+  const today = new Date();
+  const formatDate = (hours, minutes) => {
+    const d = new Date(today);
+    d.setHours(hours, minutes, 0, 0);
+    return d.toISOString();
+  };
+
   const mockAppointments = [
     {
       id: 1,
-      title: 'Reunión con Cliente VIP',
-      description: 'Revisión de propuesta trimestral',
-      startTime: '2025-11-28T10:00:00',
-      endTime: '2025-11-28T11:00:00',
+      title: 'Junta con Mauricio - Estrategia Q1',
+      description: 'Revisión de plan estratégico 2026',
+      start_time: formatDate(11, 30),
+      end_time: formatDate(12, 30),
+      location: 'Oficina Reforma 222, Piso 8',
+      travel_time: 22,
       type: 'meeting',
+      attendees: ['Mauricio López', 'Ana García', 'Carlos Ruiz'],
+      status: 'confirmed',
       location: 'Sala A, Oficinas Centrales',
       attendees: ['juan.perez@empresa.com', 'maria.gonzalez@empresa.com'],
       attendeeCount: 3,
