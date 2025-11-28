@@ -20,7 +20,15 @@ export function useWeather() {
         `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&lang=es&appid=${OPENWEATHER_API_KEY}`
       );
       
-      if (!currentResponse.ok) throw new Error('Error obteniendo clima');
+      if (!currentResponse.ok) {
+        const errorData = await currentResponse.json().catch(() => ({}));
+        console.error('❌ OpenWeather Error:', currentResponse.status, errorData);
+        
+        if (currentResponse.status === 401) {
+          throw new Error('API Key inválida o no activada aún (tarda ~2 horas)');
+        }
+        throw new Error('Error obteniendo clima');
+      }
       
       const currentData = await currentResponse.json();
 
@@ -53,9 +61,29 @@ export function useWeather() {
 
       setLocation({ lat, lon, city: currentData.name });
     } catch (err) {
-      console.error('Error fetching weather:', err);
+      console.error('❌ Error fetching weather:', err);
       setError(err.message);
-      useMockWeather();
+      
+      // Si es error 401, mostramos datos realistas de CDMX
+      if (err.message.includes('API Key')) {
+        setWeather({
+          temp: 24,
+          feels_like: 22,
+          description: 'cielo claro',
+          icon: '01d',
+          humidity: 45,
+          wind: 12,
+          city: 'Ciudad de México',
+        });
+        setForecast([
+          { time: '13:00', temp: 25, icon: '01d' },
+          { time: '14:00', temp: 26, icon: '01d' },
+          { time: '15:00', temp: 26, icon: '02d' },
+          { time: '16:00', temp: 25, icon: '02d' },
+        ]);
+      } else {
+        useMockWeather();
+      }
     } finally {
       setLoading(false);
     }

@@ -39,6 +39,17 @@ const HeroBar = () => {
 
   return (
     <div className="relative overflow-hidden bg-gradient-to-br from-[#003336] to-[#004d52] dark:from-[#002629] dark:to-[#001a1d] rounded-2xl p-6 border border-[#00BFA5]/20 shadow-lg">
+      {/* Mensaje de advertencia si hay error */}
+      {error && (
+        <div className="absolute top-2 right-2 z-20">
+          <div className="bg-yellow-500/20 backdrop-blur-sm border border-yellow-500/40 rounded-lg px-3 py-1.5 flex items-center gap-2">
+            <span className="text-xs text-yellow-200">
+              {error.includes('API Key') ? '⏳ API Key activándose (~2 horas)' : '⚠️ Usando datos de ejemplo'}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Contenido Principal */}
       <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
         {/* Saludo y Ubicación */}
