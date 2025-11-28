@@ -1,69 +1,109 @@
 import React from 'react';
-import { Cloud, CloudRain, Sun, Wind } from 'lucide-react';
+import { Cloud, Sun, MapPin, RefreshCw, CloudRain, CloudDrizzle, CloudSnow, Wind } from 'lucide-react';
+import { useWeather } from '@/hooks/useWeather';
 
 const HeroBar = () => {
-  const currentWeather = {
-    temp: 23,
-    feelsLike: 21,
-    condition: 'Soleado',
-    icon: Sun,
+  const { weather, forecast, loading, error, location, refreshWeather } = useWeather();
+
+  const greeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Buenos días';
+    if (hour < 19) return 'Buenas tardes';
+    return 'Buenas noches';
   };
 
-  const hourlyForecast = [
-    { hour: '10 AM', icon: Sun, temp: 23 },
-    { hour: '11 AM', icon: Cloud, temp: 24 },
-    { hour: '12 PM', icon: Sun, temp: 25 },
-    { hour: '1 PM', icon: Cloud, temp: 26 },
-    { hour: '2 PM', icon: CloudRain, temp: 24 },
-    { hour: '3 PM', icon: CloudRain, temp: 22 },
-    { hour: '4 PM', icon: Cloud, temp: 21 },
-    { hour: '5 PM', icon: Sun, temp: 20 },
-  ];
+  const getWeatherIcon = (iconCode) => {
+    if (!iconCode) return Sun;
+    if (iconCode.startsWith('01')) return Sun;
+    if (iconCode.startsWith('02') || iconCode.startsWith('03') || iconCode.startsWith('04')) return Cloud;
+    if (iconCode.startsWith('09') || iconCode.startsWith('10')) return CloudRain;
+    if (iconCode.startsWith('11')) return CloudDrizzle;
+    if (iconCode.startsWith('13')) return CloudSnow;
+    if (iconCode.startsWith('50')) return Wind;
+    return Cloud;
+  };
 
-  const userName = 'Patricia';
-  const greeting = new Date().getHours() < 12 ? 'Buen día' : new Date().getHours() < 19 ? 'Buenas tardes' : 'Buenas noches';
-
-  return (
-    <div className="bg-gradient-to-r from-[#003336] to-[#004d52] dark:from-[#001E21] dark:to-[#003336] rounded-2xl p-6 mb-6 border border-[#00BFA5]/20 backdrop-blur-xl shadow-lg">
-      <div className="flex items-start justify-between gap-8">
-        {/* Weather Section */}
-        <div className="flex items-start gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-2xl bg-white/10 dark:bg-white/5 backdrop-blur-sm border border-white/20 dark:border-white/10 flex items-center justify-center">
-              <Sun className="w-10 h-10 text-[#00BFA5]" />
-            </div>
-            <div>
-              <div className="text-4xl font-bold text-white mb-1">{currentWeather.temp}°</div>
-              <div className="text-sm text-white/80 dark:text-white/60">Sensación {currentWeather.feelsLike}°</div>
-              <div className="text-sm text-[#00BFA5] font-medium">{currentWeather.condition}</div>
-            </div>
+  if (loading) {
+    return (
+      <div className="relative overflow-hidden bg-gradient-to-br from-[#003336] to-[#004d52] dark:from-[#002629] dark:to-[#001a1d] rounded-2xl p-6 border border-[#00BFA5]/20 shadow-lg">
+        <div className="animate-pulse flex items-center justify-between">
+          <div className="space-y-3">
+            <div className="h-8 bg-white/10 rounded w-48"></div>
+            <div className="h-4 bg-white/10 rounded w-32"></div>
           </div>
-
-          {/* Hourly Forecast */}
-          <div className="flex items-center gap-3 pl-6 border-l border-white/20 dark:border-white/10">
-            {hourlyForecast.map((forecast, idx) => {
-              const IconComponent = forecast.icon;
-              return (
-                <div key={idx} className="flex flex-col items-center gap-1.5">
-                  <span className="text-xs text-white/70 dark:text-white/50 font-medium">{forecast.hour}</span>
-                  <IconComponent className="w-5 h-5 text-white/90 dark:text-white/70" />
-                  <span className="text-xs text-white/80 dark:text-white/60 font-semibold">{forecast.temp}°</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Welcome Message */}
-        <div className="flex-1 text-right">
-          <h2 className="text-2xl font-bold text-white mb-2">
-            {greeting}, {userName}.
-          </h2>
-          <p className="text-white/80 dark:text-white/60 text-base">
-            Aquí tienes lo esencial de tu mañana.
-          </p>
+          <div className="h-20 w-20 bg-white/10 rounded-full"></div>
         </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="relative overflow-hidden bg-gradient-to-br from-[#003336] to-[#004d52] dark:from-[#002629] dark:to-[#001a1d] rounded-2xl p-6 border border-[#00BFA5]/20 shadow-lg">
+      {/* Contenido Principal */}
+      <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+        {/* Saludo y Ubicación */}
+        <div className="flex-1">
+          <h1 className="text-3xl font-bold text-white dark:text-white/90 mb-2">{greeting()}, Patricia</h1>
+          <div className="flex items-center gap-2 text-white/80 dark:text-white/70">
+            <MapPin className="w-4 h-4" />
+            <span className="text-sm font-medium">{weather?.city || 'Cargando ubicación...'}</span>
+            {location && (
+              <button 
+                onClick={refreshWeather}
+                className="ml-2 p-1 hover:bg-white/10 rounded transition-colors"
+                title="Actualizar clima"
+              >
+                <RefreshCw className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Clima Actual */}
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3">
+            <div className="w-16 h-16 rounded-full bg-white/10 dark:bg-white/5 flex items-center justify-center border border-white/20 dark:border-white/10">
+              {weather?.icon ? (
+                <img 
+                  src={`https://openweathermap.org/img/wn/${weather.icon}@2x.png`}
+                  alt={weather.description}
+                  className="w-12 h-12"
+                />
+              ) : (
+                <Sun className="w-8 h-8 text-[#00BFA5]" />
+              )}
+            </div>
+            <div>
+              <div className="text-4xl font-bold text-white dark:text-white/90">{weather?.temp || '--'}°</div>
+              <div className="text-sm text-white/70 dark:text-white/60 font-medium capitalize">
+                {weather?.description || 'Cargando...'}
+              </div>
+            </div>
+          </div>
+
+          {/* Pronóstico 8 horas */}
+          {forecast.length > 0 && (
+            <div className="hidden lg:flex items-center gap-4 pl-6 border-l border-white/20 dark:border-white/10">
+              {forecast.slice(0, 4).map((item, idx) => {
+                const Icon = getWeatherIcon(item.icon);
+                return (
+                  <div key={idx} className="text-center">
+                    <div className="text-xs text-white/60 dark:text-white/50 mb-1 font-medium">{item.time}</div>
+                    <Icon className="w-5 h-5 text-white/80 dark:text-white/70 mx-auto mb-1" />
+                    <div className="text-sm font-bold text-white dark:text-white/90">{item.temp}°</div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {error && (
+        <div className="mt-4 text-xs text-white/50 dark:text-white/40">
+          ⚠️ Usando datos de ejemplo (API Key no configurada)
+        </div>
+      )}
     </div>
   );
 };
