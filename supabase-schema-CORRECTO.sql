@@ -1,36 +1,33 @@
 -- ========================================
--- SUPABASE DATABASE SCHEMA
+-- SUPABASE DATABASE SCHEMA - CORRECTO
 -- L.U.C.I TOTAL - ASISTENTE PERSONAL
 -- ========================================
 -- 
--- INSTRUCCIONES PARA EJECUTAR:
--- 1. Ve a tu proyecto Supabase: https://supabase.com/dashboard
--- 2. Abre el SQL Editor
--- 3. Copia y pega TODO este archivo
--- 4. Click en "Run" para ejecutar
+-- ✅ USA workspace_id (NO user_id)
+-- ✅ Campos coinciden con los servicios JS
+-- ✅ Nombres de columnas exactos del código
 --
--- Esto creará todas las tablas necesarias para el Asistente Personal
+-- INSTRUCCIONES:
+-- 1. Ve a: https://supabase.com/dashboard/project/tzglggilydzahhukxkvq
+-- 2. SQL Editor > New Query
+-- 3. Copia y pega TODO este archivo
+-- 4. Click "Run" (Ctrl/Cmd + Enter)
 -- ========================================
 
--- Habilitar Row Level Security (RLS) por defecto
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO postgres, anon, authenticated, service_role;
-
 -- ========================================
--- TABLA: workspaces
--- Espacios de trabajo (multi-tenant)
+-- 1. TABLA: workspaces (Multi-tenant)
 -- ========================================
 CREATE TABLE IF NOT EXISTS public.workspaces (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     owner_email TEXT NOT NULL,
-    plan TEXT DEFAULT 'free', -- free, pro, enterprise
+    plan TEXT DEFAULT 'free',
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- ========================================
--- TABLA: profiles
--- Perfiles de usuario
+-- 2. TABLA: profiles
 -- ========================================
 CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -52,59 +49,59 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 );
 
 -- ========================================
--- TABLA: appointments
--- Citas y reuniones
+-- 3. TABLA: appointments
+-- ✅ Campos: workspace_id, start_time, end_time, type, location, attendees, status, conflict, travel_time
 -- ========================================
 CREATE TABLE IF NOT EXISTS public.appointments (
     id BIGSERIAL PRIMARY KEY,
-    workspace_id UUID REFERENCES public.workspaces(id) ON DELETE CASCADE,
+    workspace_id UUID REFERENCES public.workspaces(id) ON DELETE CASCADE NOT NULL,
     title TEXT NOT NULL,
     description TEXT,
     start_time TIMESTAMPTZ NOT NULL,
     end_time TIMESTAMPTZ NOT NULL,
-    type TEXT DEFAULT 'meeting', -- meeting, video, call, personal
+    type TEXT DEFAULT 'meeting',
     location TEXT,
-    attendees TEXT[], -- Array de emails
+    attendees TEXT[],
     attendee_count INTEGER DEFAULT 0,
-    status TEXT DEFAULT 'confirmed', -- confirmed, pending, cancelled
+    status TEXT DEFAULT 'confirmed',
     conflict BOOLEAN DEFAULT false,
-    travel_time INTEGER, -- minutos de viaje
+    travel_time INTEGER,
     color TEXT DEFAULT '#0891B2',
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- ========================================
--- TABLA: reminders
--- Recordatorios y alertas
+-- 4. TABLA: reminders
+-- ✅ Campos: workspace_id, title, description, type, due_date, priority, status
 -- ========================================
 CREATE TABLE IF NOT EXISTS public.reminders (
     id BIGSERIAL PRIMARY KEY,
-    workspace_id UUID REFERENCES public.workspaces(id) ON DELETE CASCADE,
+    workspace_id UUID REFERENCES public.workspaces(id) ON DELETE CASCADE NOT NULL,
     title TEXT NOT NULL,
     description TEXT,
-    type TEXT DEFAULT 'general', -- documents, renewal, payment, meeting, general
+    type TEXT DEFAULT 'general',
     due_date TIMESTAMPTZ NOT NULL,
-    priority TEXT DEFAULT 'medium', -- low, medium, high, urgent
-    status TEXT DEFAULT 'active', -- active, completed, snoozed, dismissed
+    priority TEXT DEFAULT 'medium',
+    status TEXT DEFAULT 'active',
     category TEXT DEFAULT 'general',
-    related_to JSONB, -- {type: 'contact', id: 123}
+    related_to JSONB,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- ========================================
--- TABLA: tasks
--- Tareas y proyectos
+-- 5. TABLA: tasks
+-- ✅ Campos: workspace_id, title, status, priority, category, due_date, completed, delegable, tags
 -- ========================================
 CREATE TABLE IF NOT EXISTS public.tasks (
     id BIGSERIAL PRIMARY KEY,
-    workspace_id UUID REFERENCES public.workspaces(id) ON DELETE CASCADE,
+    workspace_id UUID REFERENCES public.workspaces(id) ON DELETE CASCADE NOT NULL,
     title TEXT NOT NULL,
     description TEXT,
-    status TEXT DEFAULT 'pending', -- pending, in-progress, done, blocked
-    priority TEXT DEFAULT 'medium', -- low, medium, high, urgent
-    category TEXT DEFAULT 'general', -- business, personal, etc
+    status TEXT DEFAULT 'pending',
+    priority TEXT DEFAULT 'medium',
+    category TEXT DEFAULT 'general',
     due_date TIMESTAMPTZ,
     completed BOOLEAN DEFAULT false,
     delegable BOOLEAN DEFAULT false,
@@ -120,20 +117,19 @@ CREATE TABLE IF NOT EXISTS public.tasks (
 );
 
 -- ========================================
--- TABLA: communications
--- Historial de comunicaciones
+-- 6. TABLA: communications
 -- ========================================
 CREATE TABLE IF NOT EXISTS public.communications (
     id BIGSERIAL PRIMARY KEY,
-    user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,
-    type TEXT NOT NULL, -- email, sms, whatsapp
-    direction TEXT NOT NULL, -- sent, received
+    workspace_id UUID REFERENCES public.workspaces(id) ON DELETE CASCADE NOT NULL,
+    type TEXT NOT NULL,
+    direction TEXT NOT NULL,
     to_address TEXT,
     from_address TEXT,
     subject TEXT,
     message TEXT,
     preview TEXT,
-    status TEXT DEFAULT 'sent', -- sent, delivered, read, failed, unread
+    status TEXT DEFAULT 'sent',
     sent_at TIMESTAMPTZ,
     delivered_at TIMESTAMPTZ,
     read_at TIMESTAMPTZ,
@@ -143,55 +139,52 @@ CREATE TABLE IF NOT EXISTS public.communications (
 );
 
 -- ========================================
--- TABLA: time_entries
--- Registro de tiempo trabajado
+-- 7. TABLA: time_entries
 -- ========================================
 CREATE TABLE IF NOT EXISTS public.time_entries (
     id BIGSERIAL PRIMARY KEY,
-    user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,
+    workspace_id UUID REFERENCES public.workspaces(id) ON DELETE CASCADE NOT NULL,
     task_id BIGINT REFERENCES public.tasks(id) ON DELETE CASCADE,
     start_time TIMESTAMPTZ NOT NULL,
     end_time TIMESTAMPTZ,
-    duration INTEGER, -- minutos
+    duration INTEGER,
     description TEXT,
     billable BOOLEAN DEFAULT false,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- ========================================
--- TABLA: integrations
--- Integraciones con servicios externos
+-- 8. TABLA: integrations
 -- ========================================
 CREATE TABLE IF NOT EXISTS public.integrations (
     id BIGSERIAL PRIMARY KEY,
-    user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,
-    provider TEXT NOT NULL, -- google, microsoft, slack, trello, etc
+    workspace_id UUID REFERENCES public.workspaces(id) ON DELETE CASCADE NOT NULL,
+    provider TEXT NOT NULL,
     name TEXT NOT NULL,
-    status TEXT DEFAULT 'connected', -- connected, disconnected, error
+    status TEXT DEFAULT 'connected',
     connected_at TIMESTAMPTZ DEFAULT NOW(),
     last_sync TIMESTAMPTZ,
-    data_types TEXT[], -- calendar, tasks, contacts, files
-    health TEXT DEFAULT 'healthy', -- healthy, warning, error
+    data_types TEXT[],
+    health TEXT DEFAULT 'healthy',
     config JSONB DEFAULT '{}'::jsonb,
     error_message TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- ========================================
--- TABLA: team_members
--- Miembros del equipo
+-- 9. TABLA: team_members
 -- ========================================
 CREATE TABLE IF NOT EXISTS public.team_members (
     id BIGSERIAL PRIMARY KEY,
-    user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,
+    workspace_id UUID REFERENCES public.workspaces(id) ON DELETE CASCADE NOT NULL,
     name TEXT NOT NULL,
     email TEXT NOT NULL,
     role TEXT,
     department TEXT,
     avatar TEXT,
-    status TEXT DEFAULT 'available', -- available, busy, away, offline
+    status TEXT DEFAULT 'available',
     current_activity TEXT,
-    workload INTEGER DEFAULT 0, -- percentage
+    workload INTEGER DEFAULT 0,
     skills TEXT[],
     location TEXT,
     timezone TEXT DEFAULT 'America/Mexico_City',
@@ -199,13 +192,12 @@ CREATE TABLE IF NOT EXISTS public.team_members (
 );
 
 -- ========================================
--- TABLA: conversation_history
--- Historial de chat con IA
+-- 10. TABLA: conversation_history
 -- ========================================
 CREATE TABLE IF NOT EXISTS public.conversation_history (
     id BIGSERIAL PRIMARY KEY,
-    user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,
-    role TEXT NOT NULL, -- user, assistant
+    workspace_id UUID REFERENCES public.workspaces(id) ON DELETE CASCADE NOT NULL,
+    role TEXT NOT NULL,
     message TEXT NOT NULL,
     intent TEXT,
     confidence NUMERIC,
@@ -214,18 +206,25 @@ CREATE TABLE IF NOT EXISTS public.conversation_history (
 );
 
 -- ========================================
--- INDICES para mejor performance
+-- INDICES para Performance
 -- ========================================
-CREATE INDEX IF NOT EXISTS idx_appointments_user_id ON public.appointments(user_id);
+CREATE INDEX IF NOT EXISTS idx_appointments_workspace ON public.appointments(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_appointments_start_time ON public.appointments(start_time);
-CREATE INDEX IF NOT EXISTS idx_reminders_user_id ON public.reminders(user_id);
+CREATE INDEX IF NOT EXISTS idx_appointments_status ON public.appointments(status);
+
+CREATE INDEX IF NOT EXISTS idx_reminders_workspace ON public.reminders(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_reminders_due_date ON public.reminders(due_date);
 CREATE INDEX IF NOT EXISTS idx_reminders_status ON public.reminders(status);
-CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON public.tasks(user_id);
+CREATE INDEX IF NOT EXISTS idx_reminders_priority ON public.reminders(priority);
+
+CREATE INDEX IF NOT EXISTS idx_tasks_workspace ON public.tasks(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_tasks_status ON public.tasks(status);
-CREATE INDEX IF NOT EXISTS idx_communications_user_id ON public.communications(user_id);
-CREATE INDEX IF NOT EXISTS idx_time_entries_user_id ON public.time_entries(user_id);
-CREATE INDEX IF NOT EXISTS idx_conversation_history_user_id ON public.conversation_history(user_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_priority ON public.tasks(priority);
+CREATE INDEX IF NOT EXISTS idx_tasks_due_date ON public.tasks(due_date);
+
+CREATE INDEX IF NOT EXISTS idx_communications_workspace ON public.communications(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_time_entries_workspace ON public.time_entries(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_conversation_history_workspace ON public.conversation_history(workspace_id);
 
 -- ========================================
 -- TRIGGERS para updated_at automático
@@ -238,7 +237,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER update_user_profiles_updated_at BEFORE UPDATE ON public.user_profiles
+CREATE TRIGGER update_workspaces_updated_at BEFORE UPDATE ON public.workspaces
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON public.profiles
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_appointments_updated_at BEFORE UPDATE ON public.appointments
@@ -251,18 +253,10 @@ CREATE TRIGGER update_tasks_updated_at BEFORE UPDATE ON public.tasks
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ========================================
--- DATOS DE PRUEBA (Opcional)
--- ========================================
--- Descomentar para insertar datos de prueba
-
--- INSERT INTO public.user_profiles (name, email, role, department, company)
--- VALUES ('Alex Medina', 'alex@empresa.com', 'Director General', 'Dirección', 'Firma Más Importante de México');
-
--- ========================================
 -- ROW LEVEL SECURITY (RLS)
 -- ========================================
--- Habilitar RLS en todas las tablas
-ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.workspaces ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.appointments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reminders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
@@ -272,8 +266,9 @@ ALTER TABLE public.integrations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.team_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.conversation_history ENABLE ROW LEVEL SECURITY;
 
--- Políticas básicas (permitir todo por ahora, ajustar después)
-CREATE POLICY "Enable all for authenticated users" ON public.user_profiles FOR ALL USING (true);
+-- Políticas permisivas (por ahora - ajustar según necesidad)
+CREATE POLICY "Enable all for authenticated users" ON public.workspaces FOR ALL USING (true);
+CREATE POLICY "Enable all for authenticated users" ON public.profiles FOR ALL USING (true);
 CREATE POLICY "Enable all for authenticated users" ON public.appointments FOR ALL USING (true);
 CREATE POLICY "Enable all for authenticated users" ON public.reminders FOR ALL USING (true);
 CREATE POLICY "Enable all for authenticated users" ON public.tasks FOR ALL USING (true);
@@ -284,6 +279,28 @@ CREATE POLICY "Enable all for authenticated users" ON public.team_members FOR AL
 CREATE POLICY "Enable all for authenticated users" ON public.conversation_history FOR ALL USING (true);
 
 -- ========================================
--- ¡LISTO! 
--- Ahora ve a .env y pega tus credenciales
+-- DATOS DE PRUEBA (Workspace inicial)
+-- ========================================
+-- Insertar workspace por defecto
+INSERT INTO public.workspaces (id, name, owner_email, plan)
+VALUES (
+    'e8e7d0f0-1234-5678-9abc-def012345678',
+    'L.U.C.I Workspace',
+    'patricia@luci.com',
+    'pro'
+) ON CONFLICT (id) DO NOTHING;
+
+-- Insertar perfil de prueba
+INSERT INTO public.profiles (workspace_id, name, email, role, company)
+VALUES (
+    'e8e7d0f0-1234-5678-9abc-def012345678',
+    'Patricia Garibay',
+    'patricia@luci.com',
+    'Director General',
+    'Firma Más Importante de México'
+) ON CONFLICT DO NOTHING;
+
+-- ========================================
+-- ✅ ¡LISTO! 
+-- Ejecuta esto en Supabase SQL Editor
 -- ========================================
