@@ -1,38 +1,19 @@
 -- ========================================
--- ⚠️ PRIMERO: LIMPIA TODO LO ANTERIOR
+-- SUPABASE SCHEMA - L.U.C.I TOTAL
 -- ========================================
--- Ejecuta esto PRIMERO para eliminar tablas viejas con errores
-
-DROP TABLE IF EXISTS public.conversation_history CASCADE;
-DROP TABLE IF EXISTS public.team_members CASCADE;
-DROP TABLE IF EXISTS public.integrations CASCADE;
-DROP TABLE IF EXISTS public.time_entries CASCADE;
-DROP TABLE IF EXISTS public.communications CASCADE;
-DROP TABLE IF EXISTS public.tasks CASCADE;
-DROP TABLE IF EXISTS public.reminders CASCADE;
-DROP TABLE IF EXISTS public.appointments CASCADE;
-DROP TABLE IF EXISTS public.profiles CASCADE;
-DROP TABLE IF EXISTS public.workspaces CASCADE;
-DROP TABLE IF EXISTS public.user_profiles CASCADE;
-
--- Eliminar políticas viejas
-DROP POLICY IF EXISTS "Enable all for authenticated users" ON public.workspaces;
-DROP POLICY IF EXISTS "Enable all for authenticated users" ON public.profiles;
-DROP POLICY IF EXISTS "Enable all for authenticated users" ON public.appointments;
-DROP POLICY IF EXISTS "Enable all for authenticated users" ON public.reminders;
-DROP POLICY IF EXISTS "Enable all for authenticated users" ON public.tasks;
-DROP POLICY IF EXISTS "Enable all for authenticated users" ON public.communications;
-DROP POLICY IF EXISTS "Enable all for authenticated users" ON public.time_entries;
-DROP POLICY IF EXISTS "Enable all for authenticated users" ON public.integrations;
-DROP POLICY IF EXISTS "Enable all for authenticated users" ON public.team_members;
-DROP POLICY IF EXISTS "Enable all for authenticated users" ON public.conversation_history;
+-- ✅ workspace_id en todas las tablas
+-- ✅ Campos exactos del código JS
+-- ========================================
 
 -- ========================================
--- AHORA SÍ: SCHEMA CORRECTO
+-- SUPABASE SCHEMA - L.U.C.I TOTAL
+-- ========================================
+-- ✅ workspace_id en todas las tablas
+-- ✅ Campos exactos del código JS
 -- ========================================
 
 -- 1. WORKSPACES
-CREATE TABLE public.workspaces (
+CREATE TABLE IF NOT EXISTS public.workspaces (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     owner_email TEXT NOT NULL,
@@ -42,7 +23,7 @@ CREATE TABLE public.workspaces (
 );
 
 -- 2. PROFILES
-CREATE TABLE public.profiles (
+CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     workspace_id UUID REFERENCES public.workspaces(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
@@ -62,7 +43,7 @@ CREATE TABLE public.profiles (
 );
 
 -- 3. APPOINTMENTS
-CREATE TABLE public.appointments (
+CREATE TABLE IF NOT EXISTS public.appointments (
     id BIGSERIAL PRIMARY KEY,
     workspace_id UUID REFERENCES public.workspaces(id) ON DELETE CASCADE NOT NULL,
     title TEXT NOT NULL,
@@ -82,7 +63,7 @@ CREATE TABLE public.appointments (
 );
 
 -- 4. REMINDERS
-CREATE TABLE public.reminders (
+CREATE TABLE IF NOT EXISTS public.reminders (
     id BIGSERIAL PRIMARY KEY,
     workspace_id UUID REFERENCES public.workspaces(id) ON DELETE CASCADE NOT NULL,
     title TEXT NOT NULL,
@@ -98,7 +79,7 @@ CREATE TABLE public.reminders (
 );
 
 -- 5. TASKS
-CREATE TABLE public.tasks (
+CREATE TABLE IF NOT EXISTS public.tasks (
     id BIGSERIAL PRIMARY KEY,
     workspace_id UUID REFERENCES public.workspaces(id) ON DELETE CASCADE NOT NULL,
     title TEXT NOT NULL,
@@ -121,7 +102,7 @@ CREATE TABLE public.tasks (
 );
 
 -- 6. COMMUNICATIONS
-CREATE TABLE public.communications (
+CREATE TABLE IF NOT EXISTS public.communications (
     id BIGSERIAL PRIMARY KEY,
     workspace_id UUID REFERENCES public.workspaces(id) ON DELETE CASCADE NOT NULL,
     type TEXT NOT NULL,
@@ -141,7 +122,7 @@ CREATE TABLE public.communications (
 );
 
 -- 7. TIME_ENTRIES
-CREATE TABLE public.time_entries (
+CREATE TABLE IF NOT EXISTS public.time_entries (
     id BIGSERIAL PRIMARY KEY,
     workspace_id UUID REFERENCES public.workspaces(id) ON DELETE CASCADE NOT NULL,
     task_id BIGINT REFERENCES public.tasks(id) ON DELETE CASCADE,
@@ -154,7 +135,7 @@ CREATE TABLE public.time_entries (
 );
 
 -- 8. INTEGRATIONS
-CREATE TABLE public.integrations (
+CREATE TABLE IF NOT EXISTS public.integrations (
     id BIGSERIAL PRIMARY KEY,
     workspace_id UUID REFERENCES public.workspaces(id) ON DELETE CASCADE NOT NULL,
     provider TEXT NOT NULL,
@@ -170,7 +151,7 @@ CREATE TABLE public.integrations (
 );
 
 -- 9. TEAM_MEMBERS
-CREATE TABLE public.team_members (
+CREATE TABLE IF NOT EXISTS public.team_members (
     id BIGSERIAL PRIMARY KEY,
     workspace_id UUID REFERENCES public.workspaces(id) ON DELETE CASCADE NOT NULL,
     name TEXT NOT NULL,
@@ -188,7 +169,7 @@ CREATE TABLE public.team_members (
 );
 
 -- 10. CONVERSATION_HISTORY
-CREATE TABLE public.conversation_history (
+CREATE TABLE IF NOT EXISTS public.conversation_history (
     id BIGSERIAL PRIMARY KEY,
     workspace_id UUID REFERENCES public.workspaces(id) ON DELETE CASCADE NOT NULL,
     role TEXT NOT NULL,
