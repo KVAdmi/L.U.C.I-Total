@@ -2,6 +2,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 import { motion } from 'framer-motion';
+import { useDashboardData } from '@/hooks/useDashboardData';
 import HeroBar from '@/components/dashboard/HeroBar';
 import TodayAgenda from '@/components/dashboard/TodayAgenda';
 import TodayTasks from '@/components/dashboard/TodayTasks';
@@ -11,6 +12,17 @@ import NewsStream from '@/components/dashboard/NewsStream';
 import LuciRecommendations from '@/components/dashboard/LuciRecommendations';
 
 const Dashboard = ({ onNavigate }) => {
+  const { 
+    appointments, 
+    tasks, 
+    reminders, 
+    loading, 
+    error,
+    refreshData,
+    setTasks,
+    setReminders
+  } = useDashboardData();
+
   return (
     <>
       <Helmet>
@@ -28,9 +40,31 @@ const Dashboard = ({ onNavigate }) => {
         
         {/* Tu Día Hoy - 3 Tarjetas Principales */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <TodayAgenda />
-          <TodayTasks />
-          <CriticalReminders />
+          <TodayAgenda 
+            appointments={appointments} 
+            loading={loading}
+            onRefresh={refreshData}
+          />
+          <TodayTasks 
+            tasks={tasks}
+            loading={loading}
+            onTaskToggle={(taskId) => {
+              setTasks(prev => prev.map(t => 
+                t.id === taskId 
+                  ? { ...t, status: t.status === 'completed' ? 'pending' : 'completed' }
+                  : t
+              ));
+            }}
+            onRefresh={refreshData}
+          />
+          <CriticalReminders 
+            reminders={reminders}
+            loading={loading}
+            onDismiss={(reminderId) => {
+              setReminders(prev => prev.filter(r => r.id !== reminderId));
+            }}
+            onRefresh={refreshData}
+          />
         </div>
 
         {/* Informe Ejecutivo - 4 Mini Cards */}
