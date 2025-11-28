@@ -19,8 +19,8 @@ const LoginPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState('alex@empresa.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('pgaribay@kodigovivo.com');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState({});
