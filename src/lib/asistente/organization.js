@@ -101,12 +101,6 @@ export async function getTasks(filters = {}) {
       due_date: '2025-12-02T15:00:00',
       tags: ['administración'],
       created_at: '2025-11-24T11:00:00',
-      projectName: 'Reportes Q4',
-      assignedTo: 'tu@empresa.com',
-      estimatedHours: 6,
-      tags: ['reporting', 'presentación'],
-      blockedReason: 'Esperando datos de finanzas',
-      createdAt: '2025-11-22T11:00:00',
     },
   ];
 

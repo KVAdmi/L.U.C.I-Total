@@ -89,70 +89,53 @@ export async function getAppointments(filters = {}) {
       type: 'meeting',
       attendees: ['Mauricio López', 'Ana García', 'Carlos Ruiz'],
       status: 'confirmed',
-      location: 'Sala A, Oficinas Centrales',
-      attendees: ['juan.perez@empresa.com', 'maria.gonzalez@empresa.com'],
-      attendeeCount: 3,
-      status: 'confirmed',
       conflict: false,
-      reminders: [15, 60], // minutos antes
+      reminders: [15, 60],
       color: '#0891B2',
-      createdAt: '2025-11-20T09:00:00',
+      created_at: '2025-11-20T09:00:00',
     },
     {
       id: 2,
-      title: 'Llamada de seguimiento',
-      description: 'Follow-up proyecto Q4',
-      startTime: '2025-11-28T11:00:00',
-      endTime: '2025-11-28T11:30:00',
+      title: 'Revisión financiera Q4',
+      description: 'Análisis de resultados trimestrales',
+      start_time: formatDate(15, 0),
+      end_time: formatDate(16, 30),
+      location: 'Microsoft Teams',
+      travel_time: 0,
       type: 'video',
-      location: 'Zoom',
-      attendees: ['cliente@external.com'],
-      attendeeCount: 1,
+      attendees: ['CFO', 'Controller'],
       status: 'confirmed',
-      conflict: true, // Detectado conflicto
-      reminders: [10],
+      conflict: false,
+      reminders: [10, 30],
       color: '#0891B2',
-      createdAt: '2025-11-22T14:30:00',
+      created_at: '2025-11-22T14:30:00',
     },
     {
       id: 3,
-      title: 'Revisión de Proyecto',
-      description: 'Sprint review y planning',
-      startTime: '2025-11-28T14:00:00',
-      endTime: '2025-11-28T15:30:00',
-      type: 'meeting',
-      location: 'Sala de Juntas 2',
-      attendees: ['equipo@empresa.com'],
-      attendeeCount: 8,
+      title: 'Llamada con proveedor',
+      description: 'Negociación contrato 2026',
+      start_time: formatDate(17, 30),
+      end_time: formatDate(18, 0),
+      location: 'Telefónica',
+      travel_time: 0,
+      type: 'call',
+      attendees: ['Proveedor Logística'],
       status: 'confirmed',
       conflict: false,
-      reminders: [30, 120],
+      reminders: [5],
       color: '#0891B2',
-      createdAt: '2025-11-15T10:00:00',
-    },
-    {
-      id: 4,
-      title: 'Presentación trimestral',
-      description: 'Resultados Q4 2025',
-      startTime: '2025-11-29T09:00:00',
-      endTime: '2025-11-29T10:30:00',
-      type: 'meeting',
-      location: 'Auditorio Principal',
-      attendees: ['direccion@empresa.com'],
-      attendeeCount: 25,
-      status: 'pending',
-      conflict: false,
-      reminders: [60, 1440], // 1 hora y 1 día antes
-      color: '#0891B2',
-      createdAt: '2025-11-10T16:00:00',
+      created_at: '2025-11-15T10:00:00',
     },
   ];
 
   // Aplicar filtros
   let filtered = mockAppointments;
 
-  if (filters.date) {
-    filtered = filtered.filter(apt => apt.startTime.startsWith(filters.date));
+  if (filters.startDate && filters.endDate) {
+    filtered = filtered.filter(apt => {
+      const aptDate = new Date(apt.start_time);
+      return aptDate >= new Date(filters.startDate) && aptDate <= new Date(filters.endDate);
+    });
   }
 
   if (filters.type) {
