@@ -5,6 +5,9 @@
  * @module asistente/coordination
  */
 
+import { supabase } from '../supabase.js';
+import { getCurrentWorkspaceId, getCurrentProfileId } from '../workspace.js';
+
 /**
  * Obtiene lista de miembros del equipo
  * @param {Object} filters - Filtros opcionales

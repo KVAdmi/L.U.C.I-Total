@@ -6,6 +6,7 @@
  */
 
 import { supabase } from '@/lib/supabase';
+import { getCurrentWorkspaceId, getCurrentProfileId } from '@/lib/workspace';
 
 /**
  * Obtiene todas las citas con filtros opcionales
@@ -28,9 +29,17 @@ export async function getAppointments(filters = {}) {
   // Si Supabase está configurado, usar DB real
   if (supabase) {
     try {
+      const workspaceId = await getCurrentWorkspaceId();
+      
+      if (!workspaceId) {
+        console.warn('No workspace found, using mock data');
+        return getMockAppointments();
+      }
+
       let query = supabase
         .from('appointments')
         .select('*')
+        .eq('workspace_id', workspaceId)
         .order('start_time', { ascending: true });
 
       // Aplicar filtros
@@ -174,17 +183,24 @@ export async function createAppointment(appointmentData) {
   // Si Supabase está configurado, guardar en DB
   if (supabase) {
     try {
+      const workspaceId = await getCurrentWorkspaceId();
+      const profileId = await getCurrentProfileId();
+      
+      if (!workspaceId || !profileId) {
+        throw new Error('No workspace or profile found');
+      }
+
       const newAppointment = {
+        workspace_id: workspaceId,
+        created_by: profileId,
         title: appointmentData.title,
+        description: appointmentData.description || '',
         start_time: appointmentData.startTime,
         end_time: appointmentData.endTime,
         type: appointmentData.type || 'meeting',
         location: appointmentData.location || '',
-        attendees: appointmentData.attendees || [],
-        attendee_count: appointmentData.attendees?.length || 0,
-        status: 'confirmed',
-        conflict: false,
-        reminders: [15, 60],
+        status: 'scheduled',
+        priority: 'normal',
         color: '#0891B2',
       };
 
@@ -202,12 +218,11 @@ export async function createAppointment(appointmentData) {
       return {
         id: data.id,
         title: data.title,
+        description: data.description,
         startTime: data.start_time,
         endTime: data.end_time,
         type: data.type,
         location: data.location,
-        attendees: data.attendees,
-        attendeeCount: data.attendee_count,
         status: data.status,
         conflict: data.conflict,
         reminders: data.reminders,
@@ -251,13 +266,23 @@ export async function deleteAppointment(appointmentId) {
     throw new Error('ID de cita es obligatorio');
   }
 
+  // Obtener workspace_id del usuario autenticado
+  const workspaceId = await getCurrentWorkspaceId();
+  
+  if (!workspaceId) {
+    console.warn('[ASISTENTE] No se encontró workspace, usando datos mock');
+    console.log('[ASISTENTE] Cita eliminada (MOCK):', appointmentId);
+    return true;
+  }
+
   // Si Supabase está configurado, eliminar de DB
   if (supabase) {
     try {
       const { error } = await supabase
         .from('appointments')
         .delete()
-        .eq('id', appointmentId);
+        .eq('id', appointmentId)
+        .eq('workspace_id', workspaceId); // Validar que pertenece a este workspace
 
       if (error) throw error;
 
@@ -281,8 +306,6 @@ export async function deleteAppointment(appointmentId) {
  * @param {number} excludeId - ID de cita a excluir (para ediciones)
  * @returns {Promise<Array>} Lista de citas en conflicto
  * 
- * @TODO: Conectar con Supabase
- * @TODO: Query complejo para detectar overlaps
  * @TODO: Considerar tiempo de traslado entre ubicaciones
  * @TODO: Sugerir horarios alternativos
  * @TODO: Implementar lógica de buffer time (15 min entre citas)
@@ -290,8 +313,64 @@ export async function deleteAppointment(appointmentId) {
 export async function detectConflicts(startTime, endTime, excludeId = null) {
   await new Promise(resolve => setTimeout(resolve, 400));
 
-  // Simular detección de conflictos
-  const conflicts = [
+  // Obtener workspace_id del usuario autenticado
+  const workspaceId = await getCurrentWorkspaceId();
+  
+  if (!workspaceId) {
+    console.warn('[ASISTENTE] No se encontró workspace, usando datos mock');
+    // En mock, 30% de probabilidad de conflicto
+    const hasConflict = Math.random() < 0.3;
+    const conflicts = hasConflict ? [
+      {
+        id: 2,
+        title: 'Llamada de seguimiento',
+        startTime: startTime,
+        endTime: endTime,
+        reason: 'Horario superpuesto',
+      },
+    ] : [];
+    console.log('[ASISTENTE] Conflictos detectados (MOCK):', conflicts.length);
+    return conflicts;
+  }
+
+  // Si Supabase está configurado, buscar conflictos reales
+  if (supabase) {
+    try {
+      let query = supabase
+        .from('appointments')
+        .select('*')
+        .eq('workspace_id', workspaceId)
+        .neq('status', 'cancelled')
+        .or(`and(start_time.lte.${endTime},end_time.gte.${startTime})`); // Detectar overlaps
+
+      // Excluir cita específica (útil al editar)
+      if (excludeId) {
+        query = query.neq('id', excludeId);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      const conflicts = (data || []).map(apt => ({
+        id: apt.id,
+        title: apt.title,
+        startTime: apt.start_time,
+        endTime: apt.end_time,
+        reason: 'Horario superpuesto',
+      }));
+
+      console.log('[ASISTENTE] Conflictos detectados en SUPABASE:', conflicts.length);
+      return conflicts;
+    } catch (error) {
+      console.error('[ASISTENTE] Error detectando conflictos:', error);
+      return [];
+    }
+  }
+
+  // Fallback mock
+  const hasConflict = Math.random() < 0.3;
+  const conflicts = hasConflict ? [
     {
       id: 2,
       title: 'Llamada de seguimiento',
@@ -299,13 +378,9 @@ export async function detectConflicts(startTime, endTime, excludeId = null) {
       endTime: endTime,
       reason: 'Horario superpuesto',
     },
-  ];
-
-  // En mock, 30% de probabilidad de conflicto
-  const hasConflict = Math.random() < 0.3;
-
-  console.log('[ASISTENTE] Conflictos detectados (MOCK):', hasConflict ? conflicts.length : 0);
-  return hasConflict ? conflicts : [];
+  ] : [];
+  console.log('[ASISTENTE] Conflictos detectados (MOCK):', conflicts.length);
+  return conflicts;
 }
 
 /**

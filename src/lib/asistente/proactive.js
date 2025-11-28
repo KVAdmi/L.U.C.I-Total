@@ -5,6 +5,9 @@
  * @module asistente/proactive
  */
 
+import { supabase } from '../supabase.js';
+import { getCurrentWorkspaceId, getCurrentProfileId } from '../workspace.js';
+
 /**
  * Obtiene sugerencias proactivas de IA
  * @param {Object} options - Opciones

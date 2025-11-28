@@ -5,6 +5,9 @@
  * @module asistente/productivity
  */
 
+import { supabase } from '../supabase.js';
+import { getCurrentWorkspaceId, getCurrentProfileId } from '../workspace.js';
+
 /**
  * Obtiene estadísticas de productividad
  * @param {Object} options - Opciones

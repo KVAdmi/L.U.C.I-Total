@@ -5,6 +5,9 @@
  * @module asistente/conversational
  */
 
+import { supabase } from '../supabase.js';
+import { getCurrentWorkspaceId, getCurrentProfileId } from '../workspace.js';
+
 /**
  * Envía un mensaje al asistente conversacional
  * @param {string} message - Mensaje del usuario

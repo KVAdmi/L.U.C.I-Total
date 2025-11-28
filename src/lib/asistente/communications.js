@@ -5,6 +5,9 @@
  * @module asistente/communications
  */
 
+import { supabase } from '../supabase.js';
+import { getCurrentWorkspaceId, getCurrentProfileId } from '../workspace.js';
+
 /**
  * Envía un email
  * @param {Object} emailData - Datos del email

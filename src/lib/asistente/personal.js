@@ -5,6 +5,9 @@
  * @module asistente/personal
  */
 
+import { supabase } from '../supabase.js';
+import { getCurrentWorkspaceId, getCurrentProfileId } from '../workspace.js';
+
 /**
  * Obtiene el perfil del usuario
  * @returns {Promise<Object>} Datos del perfil

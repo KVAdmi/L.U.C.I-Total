@@ -5,6 +5,9 @@
  * @module asistente/reminders
  */
 
+import { supabase } from '../supabase.js';
+import { getCurrentWorkspaceId, getCurrentProfileId } from '../workspace.js';
+
 /**
  * Obtiene todos los recordatorios con filtros
  * @param {Object} filters - Filtros opcionales

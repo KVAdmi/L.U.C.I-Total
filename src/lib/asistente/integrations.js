@@ -5,6 +5,9 @@
  * @module asistente/integrations
  */
 
+import { supabase } from '../supabase.js';
+import { getCurrentWorkspaceId, getCurrentProfileId } from '../workspace.js';
+
 /**
  * Conecta un servicio externo
  * @param {Object} serviceData - Datos del servicio

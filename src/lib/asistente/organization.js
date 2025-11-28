@@ -5,6 +5,9 @@
  * @module asistente/organization
  */
 
+import { supabase } from '../supabase.js';
+import { getCurrentWorkspaceId, getCurrentProfileId } from '../workspace.js';
+
 /**
  * Obtiene todas las tareas con filtros
  * @param {Object} filters - Filtros opcionales
